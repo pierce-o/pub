@@ -1,0 +1,10 @@
+E:\dev\c#\pub\pub\pub\bin\Debug\pub.exe.config
+E:\dev\c#\pub\pub\pub\bin\Debug\pub.exe
+E:\dev\c#\pub\pub\pub\bin\Debug\pub.pdb
+E:\dev\c#\pub\pub\pub\obj\Debug\pub.csprojResolveAssemblyReference.cache
+E:\dev\c#\pub\pub\pub\obj\Debug\pub.Properties.Resources.resources
+E:\dev\c#\pub\pub\pub\obj\Debug\pub.csproj.GenerateResource.cache
+E:\dev\c#\pub\pub\pub\obj\Debug\pub.csproj.CoreCompileInputs.cache
+E:\dev\c#\pub\pub\pub\obj\Debug\pub.exe
+E:\dev\c#\pub\pub\pub\obj\Debug\pub.pdb
+E:\dev\c#\pub\pub\pub\obj\Debug\pub.DEV_BROADCAST_VOLUME.resources
