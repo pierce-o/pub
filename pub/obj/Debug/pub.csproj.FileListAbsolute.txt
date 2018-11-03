@@ -7,4 +7,4 @@ E:\dev\c#\pub\pub\pub\obj\Debug\pub.csproj.GenerateResource.cache
 E:\dev\c#\pub\pub\pub\obj\Debug\pub.csproj.CoreCompileInputs.cache
 E:\dev\c#\pub\pub\pub\obj\Debug\pub.exe
 E:\dev\c#\pub\pub\pub\obj\Debug\pub.pdb
-E:\dev\c#\pub\pub\pub\obj\Debug\pub.DEV_BROADCAST_VOLUME.resources
+E:\dev\c#\pub\pub\pub\obj\Debug\pub.Form1.resources
