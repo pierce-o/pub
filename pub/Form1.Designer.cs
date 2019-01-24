@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.listBoxDevicesConnected = new System.Windows.Forms.ListBox();
             this.labelDevices = new System.Windows.Forms.Label();
             this.labelDevicesWhitelisted = new System.Windows.Forms.Label();
@@ -37,12 +38,10 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.labelBackupLocation = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.comboBox3 = new System.Windows.Forms.ComboBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.labelArchiveMethod = new System.Windows.Forms.Label();
+            this.comboBoxArchiveMethod = new System.Windows.Forms.ComboBox();
+            this.labelFileResolver = new System.Windows.Forms.Label();
+            this.comboBoxFileResolver = new System.Windows.Forms.ComboBox();
             this.buttonBackupLocation = new System.Windows.Forms.Button();
             this.textBoxFolderPath = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
@@ -121,17 +120,15 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.labelBackupLocation);
-            this.groupBox2.Controls.Add(this.label3);
-            this.groupBox2.Controls.Add(this.comboBox3);
-            this.groupBox2.Controls.Add(this.label2);
-            this.groupBox2.Controls.Add(this.comboBox2);
-            this.groupBox2.Controls.Add(this.label1);
-            this.groupBox2.Controls.Add(this.comboBox1);
+            this.groupBox2.Controls.Add(this.labelArchiveMethod);
+            this.groupBox2.Controls.Add(this.comboBoxArchiveMethod);
+            this.groupBox2.Controls.Add(this.labelFileResolver);
+            this.groupBox2.Controls.Add(this.comboBoxFileResolver);
             this.groupBox2.Controls.Add(this.buttonBackupLocation);
             this.groupBox2.Controls.Add(this.textBoxFolderPath);
             this.groupBox2.Location = new System.Drawing.Point(218, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(190, 190);
+            this.groupBox2.Size = new System.Drawing.Size(190, 151);
             this.groupBox2.TabIndex = 7;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Backup Settings";
@@ -145,71 +142,49 @@
             this.labelBackupLocation.TabIndex = 8;
             this.labelBackupLocation.Text = "Backup Location";
             // 
-            // label3
+            // labelArchiveMethod
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 146);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(35, 13);
-            this.label3.TabIndex = 7;
-            this.label3.Text = "label3";
+            this.labelArchiveMethod.AutoSize = true;
+            this.labelArchiveMethod.Location = new System.Drawing.Point(6, 106);
+            this.labelArchiveMethod.Name = "labelArchiveMethod";
+            this.labelArchiveMethod.Size = new System.Drawing.Size(82, 13);
+            this.labelArchiveMethod.TabIndex = 5;
+            this.labelArchiveMethod.Text = "Archive Method";
             // 
-            // comboBox3
+            // comboBoxArchiveMethod
             // 
-            this.comboBox3.FormattingEnabled = true;
-            this.comboBox3.Items.AddRange(new object[] {
+            this.comboBoxArchiveMethod.FormattingEnabled = true;
+            this.comboBoxArchiveMethod.Items.AddRange(new object[] {
             "High",
             "Medium",
             "Low"});
-            this.comboBox3.Location = new System.Drawing.Point(6, 162);
-            this.comboBox3.Name = "comboBox3";
-            this.comboBox3.Size = new System.Drawing.Size(178, 21);
-            this.comboBox3.TabIndex = 6;
-            this.comboBox3.Text = "Default : Medium";
+            this.comboBoxArchiveMethod.Location = new System.Drawing.Point(6, 122);
+            this.comboBoxArchiveMethod.Name = "comboBoxArchiveMethod";
+            this.comboBoxArchiveMethod.Size = new System.Drawing.Size(178, 21);
+            this.comboBoxArchiveMethod.TabIndex = 4;
+            this.comboBoxArchiveMethod.Text = "Default : Medium";
             // 
-            // label2
+            // labelFileResolver
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 106);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(35, 13);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "label2";
+            this.labelFileResolver.AutoSize = true;
+            this.labelFileResolver.Location = new System.Drawing.Point(6, 66);
+            this.labelFileResolver.Name = "labelFileResolver";
+            this.labelFileResolver.Size = new System.Drawing.Size(68, 13);
+            this.labelFileResolver.TabIndex = 3;
+            this.labelFileResolver.Text = "File Resolver";
             // 
-            // comboBox2
+            // comboBoxFileResolver
             // 
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Items.AddRange(new object[] {
+            this.comboBoxFileResolver.FormattingEnabled = true;
+            this.comboBoxFileResolver.Items.AddRange(new object[] {
             "High",
             "Medium",
             "Low"});
-            this.comboBox2.Location = new System.Drawing.Point(6, 122);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(178, 21);
-            this.comboBox2.TabIndex = 4;
-            this.comboBox2.Text = "Default : Medium";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 66);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "label1";
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "High",
-            "Medium",
-            "Low"});
-            this.comboBox1.Location = new System.Drawing.Point(6, 82);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(178, 21);
-            this.comboBox1.TabIndex = 2;
-            this.comboBox1.Text = "Default : Medium";
+            this.comboBoxFileResolver.Location = new System.Drawing.Point(6, 82);
+            this.comboBoxFileResolver.Name = "comboBoxFileResolver";
+            this.comboBoxFileResolver.Size = new System.Drawing.Size(178, 21);
+            this.comboBoxFileResolver.TabIndex = 2;
+            this.comboBoxFileResolver.Text = "Default : Medium";
             // 
             // buttonBackupLocation
             // 
@@ -237,6 +212,7 @@
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "pub";
@@ -260,12 +236,10 @@
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Button buttonBackupLocation;
         private System.Windows.Forms.TextBox textBoxFolderPath;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ComboBox comboBox3;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox comboBox2;
+        private System.Windows.Forms.Label labelFileResolver;
+        private System.Windows.Forms.ComboBox comboBoxFileResolver;
+        private System.Windows.Forms.Label labelArchiveMethod;
+        private System.Windows.Forms.ComboBox comboBoxArchiveMethod;
         private System.Windows.Forms.Label labelBackupLocation;
     }
 }

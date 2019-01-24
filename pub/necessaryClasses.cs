@@ -16,6 +16,15 @@ namespace pub
         public Int32 dbcv_unitmask;
     }
 
+    public enum SettingLevels
+    {
+
+        high = 0,
+        medium,
+        low
+
+    }
+
     public class volumeInformation
     {
 

@@ -12,6 +12,16 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Microsoft.Win32; // Used for the registery
 using System.IO; // Used for getting all the current drives
+using Newtonsoft.Json;
+
+/*
+ * 
+ *  Aim to change the the regisry to use a json file
+ *  One json file for everything
+ *  
+ *  Optimize it by removing all the useless loops
+ * 
+ */
 
 namespace pub
 {
@@ -38,22 +48,50 @@ namespace pub
 
         List<volumeInformation> connectedDrives = new List<volumeInformation>();
 
+        fileBackup backupProcesses;
+        settingsManager settingsManager;
+
+        public string targetSettingsFolder = null;
+        public string targetSettingsPath = null;
+
         public Form1()
         {
             InitializeComponent();
 
+            backupProcesses = new fileBackup();
+            settingsManager = new settingsManager();
+
             // Populate the connected devices.
 
-            foreach (DriveInfo drive in DriveInfo.GetDrives())
+            // Assign the path for the settings path
+            targetSettingsPath = Path.Combine(Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData ), "pub\\settings.json");
+            targetSettingsFolder = Path.Combine(Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData ), "pub");
+
+            if (File.Exists(targetSettingsPath) == false || Directory.Exists(targetSettingsFolder) == false) // If the settings file doesn't currently exist then create it
             {
-                if (drive.DriveType == DriveType.Removable)
+
+                Directory.CreateDirectory(targetSettingsFolder); // Create the folder in appdata
+                File.Create(targetSettingsPath).Close(); // Create the json file
+
+                // Set the default file backup path to appdata pub
+                settingsManager.setBackupPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "pub\\backups"));
+
+            }
+            else // If there is already a file for it then just read the file and populate the settings object
+                settingsManager.readSettings();
+
+            // Adding already connected drives to the program
+
+            foreach (DriveInfo drive in DriveInfo.GetDrives()) // Loop through each drive connected to the PC
+            {
+                if (drive.DriveType == DriveType.Removable) // Check if it is a USB
                 {
-                    listBoxDevicesConnected.Items.Add(drive.Name + drive.VolumeLabel);
+                    listBoxDevicesConnected.Items.Add(drive.Name + drive.VolumeLabel); // Add it to the connected drives listbox
 
                     volumeInformation volumeInfo = new volumeInformation();
 
                     if (GetVolumeInformation(drive.RootDirectory.ToString(), volumeInfo.volumeName, volumeInfo.volumeName.Capacity, out volumeInfo.serialNumber, out volumeInfo.maxComponentLen, out volumeInfo.fileSysetmFlags, volumeInfo.fileSystemName, volumeInfo.fileSystemName.Capacity))
-                        connectedDrives.Add(volumeInfo);
+                        connectedDrives.Add(volumeInfo); // Add the volume information for the new drive to the end of the connectedDrives list
 
                 }
             }
@@ -68,14 +106,14 @@ namespace pub
 
                 string[] devices = registryKey.GetSubKeyNames();
 
-                foreach (string device in devices)
+                foreach (string device in devices) // Loop through all the subkeys 
                 {
 
-                    RegistryKey rk = registryKey.OpenSubKey(device, false);
+                    RegistryKey rk = registryKey.OpenSubKey(device, false); 
 
-                    listBoxWhitelistedDevices.Items.Add( rk.GetValue("name").ToString() );
+                    listBoxWhitelistedDevices.Items.Add( rk.GetValue("name").ToString() ); // Add each one to the end of the whitelisted devices 
 
-                    rk.Close();
+                    rk.Close(); 
 
                 }
 
@@ -157,7 +195,32 @@ namespace pub
                                         {
                                             if ((string)rk.GetValue("serialnumber") == volumeInfo.serialNumber.ToString("X8"))
                                             {
-                                                Debug.WriteLine("Serial Number found.");
+
+                                                SettingLevels archiveMethod = (SettingLevels)comboBoxArchiveMethod.SelectedIndex;
+                                                SettingLevels fileResolver = (SettingLevels)comboBoxFileResolver.SelectedIndex;
+
+
+                                                switch (fileResolver)
+                                                {
+
+                                                    case SettingLevels.high:
+                                                        backupProcesses.backupHigh(archiveMethod, volumeInfo);
+                                                        break;
+
+                                                    case SettingLevels.medium:
+                                                        backupProcesses.backupMedium(archiveMethod, volumeInfo);
+                                                        break;
+
+                                                    case SettingLevels.low:
+                                                        backupProcesses.backupLow(archiveMethod, volumeInfo);
+                                                        break;
+
+                                                    default:
+                                                        MessageBox.Show("Error occured when getting the resolver setting.");
+                                                        break;
+
+                                                }
+
                                                 break;
                                             }
                                         }
@@ -186,14 +249,13 @@ namespace pub
         private void buttonBackupLocation_Click(object sender, EventArgs e)
         {
 
-            FolderBrowserDialog fileDialog = new FolderBrowserDialog();
+            FolderBrowserDialog fileDialog = new FolderBrowserDialog(); // Create a new file dialog
 
-            DialogResult result = fileDialog.ShowDialog();
+            DialogResult result = fileDialog.ShowDialog(); // Open it and get the result from it
 
-            if ( result == DialogResult.OK )
+            if ( result == DialogResult.OK ) // If it has been selected and confirmed
             {
                 // Set the path in the settings to the new path
-                // Todo - have an ini file within the appdata folder
 
                 textBoxFolderPath.Text = fileDialog.SelectedPath;
 
@@ -207,49 +269,56 @@ namespace pub
         private void buttonWhitelist_Click(object sender, EventArgs e)
         {
 
-            RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\pub\devices", true);
-
-            if (registryKey != null)
+            if (listBoxDevicesConnected.SelectedItem != null)
             {
-                // Proceed to check if the device has been added to the pool
 
-                foreach (volumeInformation drive in connectedDrives) // Loop through the stored devices
+                RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\pub\devices", true);
+
+                if (registryKey != null)
                 {
+                    // Proceed to check if the device has been added to the pool
 
-                    // Todo - find a better method of identifying the drive aka serial number. Maybe a class for the combobox item with a ToString override?
-
-                    // Check if the current device in the array has the same volume name as the selected drive.
-                    if ( drive.volumeName.ToString() == listBoxDevicesConnected.SelectedItem.ToString().Substring(3) ) // Remove the devices path
+                    foreach (volumeInformation drive in connectedDrives) // Loop through the stored devices
                     {
 
-                        if ( !(registryKey.GetSubKeyNames().Contains(drive.serialNumber.ToString("X8"))) ) // Make sure that the device isn't already registered.
+                        // Todo - find a better method of identifying the drive aka serial number. Maybe a class for the combobox item with a ToString override?
+
+                        // Check if the current device in the array has the same volume name as the selected drive.
+                        if (drive.volumeName.ToString() == listBoxDevicesConnected.SelectedItem.ToString().Substring(3)) // Remove the devices path
                         {
-                            using (RegistryKey rk = registryKey.CreateSubKey(drive.serialNumber.ToString("X8"), true)) // Create a new sub key with the serial number as the name.
+
+                            if (!(registryKey.GetSubKeyNames().Contains(drive.serialNumber.ToString("X8")))) // Make sure that the device isn't already registered.
                             {
-
-                                if (rk != null) // Make sure that it has been created.
+                                using (RegistryKey rk = registryKey.CreateSubKey(drive.serialNumber.ToString("X8"), true)) // Create a new sub key with the serial number as the name.
                                 {
-                                    // Set the necessary values.
-                                    rk.SetValue("name", drive.volumeName);
-                                    rk.SetValue("serialnumber", drive.serialNumber.ToString("X8"));
-                                    // Add the device name to the list of whitelisted devices.
-                                    listBoxWhitelistedDevices.Items.Add(listBoxDevicesConnected.SelectedItem.ToString().Substring(3));
+
+                                    if (rk != null) // Make sure that it has been created.
+                                    {
+                                        // Set the necessary values.
+                                        rk.SetValue("name", drive.volumeName);
+                                        rk.SetValue("serialnumber", drive.serialNumber.ToString("X8"));
+                                        // Add the device name to the list of whitelisted devices.
+                                        listBoxWhitelistedDevices.Items.Add(listBoxDevicesConnected.SelectedItem.ToString().Substring(3));
+                                    }
+
+                                    rk.Close(); // Close the opened handle to the registry.
+
                                 }
-
-                                rk.Close(); // Close the opened handle to the registry.
-
                             }
+                            else // Notify the user that it already exists
+                                MessageBox.Show("Device already is whitelisted!");
+
                         }
-                        else // Notify the user that it already exists
-                            MessageBox.Show("Device already is whitelisted!");
 
                     }
 
+                    registryKey.Close(); // Close the opened handle to the registry.
+
                 }
 
-                registryKey.Close(); // Close the opened handle to the registry.
-
-            }   
+            }
+            else
+                MessageBox.Show("No device has been selected. Select a device then try again.");
 
         }
 
@@ -258,10 +327,36 @@ namespace pub
 
             if (MessageBox.Show("Are you sure you want to remove this device?", "Device Removal", MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
+
                 // Remove it from the registry 
 
-                // Get the volume info
+                RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\pub\devices", true);
 
+                if (registryKey != null)
+                {
+
+                    foreach (volumeInformation drive in connectedDrives) // Loop through the stored devices
+                    {
+
+                        // Todo - find a better method of identifying the drive aka serial number. Maybe a class for the combobox item with a ToString override?
+
+                        // Check if the current device in the array has the same volume name as the selected drive.
+                        if (drive.volumeName.ToString() == listBoxWhitelistedDevices.SelectedItem.ToString()) // Remove the devices path
+                        {
+
+                            if (registryKey.GetSubKeyNames().Contains(drive.serialNumber.ToString("X8"))) // Make sure that the device is already registered.
+                                registryKey.DeleteSubKey(drive.serialNumber.ToString("X8")); // Delete the devices subkey
+                            else // Notify the user that it already doesn't exist
+                                MessageBox.Show("Device not found in registry!");
+
+                        }
+
+                    }
+
+                    registryKey.Close(); // Close the opened handle to the registry.
+
+                }
+            
                 // Remove it visually
                 listBoxWhitelistedDevices.Items.RemoveAt(listBoxWhitelistedDevices.SelectedIndex);
 

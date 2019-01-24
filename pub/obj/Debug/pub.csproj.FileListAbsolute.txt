@@ -8,3 +8,7 @@ E:\dev\c#\pub\pub\pub\obj\Debug\pub.csproj.CoreCompileInputs.cache
 E:\dev\c#\pub\pub\pub\obj\Debug\pub.exe
 E:\dev\c#\pub\pub\pub\obj\Debug\pub.pdb
 E:\dev\c#\pub\pub\pub\obj\Debug\pub.Form1.resources
+E:\dev\c#\pub\pub\pub\bin\Debug\Newtonsoft.Json.dll
+E:\dev\c#\pub\pub\pub\bin\Debug\Newtonsoft.Json.pdb
+E:\dev\c#\pub\pub\pub\bin\Debug\Newtonsoft.Json.xml
+E:\dev\c#\pub\pub\pub\obj\Debug\pub.csproj.CopyComplete
