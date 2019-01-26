@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace pub
 {
@@ -13,26 +14,33 @@ namespace pub
     class settingsClass
     {
 
+        public settingsClass()
+        {
+            whitelistedDrives = new List<volumeInformation>();
+        }
+
         public string backupPath;
 
         public List<volumeInformation> whitelistedDrives;
 
-        public SettingLevels fileResolverMethod;
-        public SettingLevels archiveMethod;
-
     }
 
-    class settingsManager
+    class SettingsManager
     {
 
-        public settingsManager( ) // Constructor
+        public SettingsManager( ) // Constructor
         {
             settings = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "pub\\settings.json"); // Set the local settings path
-            settingsObject = new settingsClass(); // Create a new settins object
+            settingsObject = new settingsClass(); // Create a new settings object
         }
 
         private string settings;
         private settingsClass settingsObject;
+
+        public settingsClass getSettingsObject()
+        {
+            return settingsObject;
+        }
 
         public void readSettings() // Loads settings from the json file
         {
@@ -41,6 +49,39 @@ namespace pub
                 string settingsData = reader.ReadToEnd(); // Read the whole file
                 settingsObject = JsonConvert.DeserializeObject<settingsClass>(settingsData); // Convert from the json format to the settingsClass structure
             }
+        }
+
+        public volumeInformation findVolumeInformation( int serialnumber )
+        {
+            return settingsObject.whitelistedDrives.Find( x => x.serialNumber == serialnumber ); 
+        }
+
+        public int removeWhitelistedDevice( volumeInformation volumeinfo )
+        {
+            // This hopefully should only ever be 0 or 1
+            int numberOfElementsRemoved = settingsObject.whitelistedDrives.RemoveAll( x => x.serialNumber == volumeinfo.serialNumber );
+
+            save(); // Save this to the config file
+
+            return numberOfElementsRemoved;
+        }
+
+        public bool addWhitelistDevice( volumeInformation volumeinfo )
+        {
+            readSettings(); // Make sure the settings object is upto date
+
+            if (settingsObject.whitelistedDrives.Find(x => x.serialNumber == volumeinfo.serialNumber) == null) // Check if the device is already in the list
+            {
+                settingsObject.whitelistedDrives.Add(volumeinfo); // Add it to the end of the list
+                save(); // Save it to the json file
+                return true; 
+            }
+            else
+            {
+                MessageBox.Show("Device is already whitelisted.");
+                return false;
+            }
+
         }
 
         public void setBackupPath( string filePath ) 

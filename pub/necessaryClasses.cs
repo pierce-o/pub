@@ -37,12 +37,19 @@ namespace pub
             fileSystemName = new StringBuilder(261);
         }
 
+        public override string ToString()
+        {
+            return volumeName.ToString();
+        }
 
         public StringBuilder volumeName;
         public Int32 serialNumber;
         public Int32 maxComponentLen;
         public Int32 fileSysetmFlags;
         public StringBuilder fileSystemName;
+
+        public SettingLevels fileResolverMethod = SettingLevels.medium;
+        public SettingLevels archiveMethod = SettingLevels.medium;
 
     }
 

@@ -14,15 +14,6 @@ using Microsoft.Win32; // Used for the registery
 using System.IO; // Used for getting all the current drives
 using Newtonsoft.Json;
 
-/*
- * 
- *  Aim to change the the regisry to use a json file
- *  One json file for everything
- *  
- *  Optimize it by removing all the useless loops
- * 
- */
-
 namespace pub
 {
 
@@ -46,10 +37,8 @@ namespace pub
         const int DBTF_MEDIA = 0x1; // This is a CD or a USB flash drive.
         const int DBTF_NET = 0x2; // This is a networked drive.
 
-        List<volumeInformation> connectedDrives = new List<volumeInformation>();
-
-        fileBackup backupProcesses;
-        settingsManager settingsManager;
+        FileBackup backupProcesses;
+        SettingsManager settingsManager;
 
         public string targetSettingsFolder = null;
         public string targetSettingsPath = null;
@@ -58,8 +47,8 @@ namespace pub
         {
             InitializeComponent();
 
-            backupProcesses = new fileBackup();
-            settingsManager = new settingsManager();
+            backupProcesses = new FileBackup();
+            settingsManager = new SettingsManager();
 
             // Populate the connected devices.
 
@@ -78,7 +67,18 @@ namespace pub
 
             }
             else // If there is already a file for it then just read the file and populate the settings object
+            {
                 settingsManager.readSettings();
+
+                // Just apply the settings to the visual elements
+
+                // Path textbox 
+                textBoxFolderPath.Text = settingsManager.getSettingsObject().backupPath;
+
+                // Force the textbox to show the end of the file path
+                textBoxFolderPath.SelectionStart = textBoxFolderPath.Text.Length;
+                textBoxFolderPath.SelectionLength = 0;
+            }
 
             // Adding already connected drives to the program
 
@@ -86,39 +86,18 @@ namespace pub
             {
                 if (drive.DriveType == DriveType.Removable) // Check if it is a USB
                 {
-                    listBoxDevicesConnected.Items.Add(drive.Name + drive.VolumeLabel); // Add it to the connected drives listbox
-
                     volumeInformation volumeInfo = new volumeInformation();
 
                     if (GetVolumeInformation(drive.RootDirectory.ToString(), volumeInfo.volumeName, volumeInfo.volumeName.Capacity, out volumeInfo.serialNumber, out volumeInfo.maxComponentLen, out volumeInfo.fileSysetmFlags, volumeInfo.fileSystemName, volumeInfo.fileSystemName.Capacity))
-                        connectedDrives.Add(volumeInfo); // Add the volume information for the new drive to the end of the connectedDrives list
-
+                        listBoxDevicesConnected.Items.Add( volumeInfo ); // Add the volume information for the new drive to the end of the listbox
                 }
             }
 
             // Fetch and popluate the whitelisted devices.
 
-            RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\pub\devices", false);
-
-            if (registryKey != null) // Create that sub key
-            {
-                // Proceed to check if the device has been added to the pool
-
-                string[] devices = registryKey.GetSubKeyNames();
-
-                foreach (string device in devices) // Loop through all the subkeys 
-                {
-
-                    RegistryKey rk = registryKey.OpenSubKey(device, false); 
-
-                    listBoxWhitelistedDevices.Items.Add( rk.GetValue("name").ToString() ); // Add each one to the end of the whitelisted devices 
-
-                    rk.Close(); 
-
-                }
-
-                registryKey.Close();
-            }
+            if( settingsManager.getSettingsObject().whitelistedDrives != null ) // Make sure there is a list in the first place
+                foreach ( var device in settingsManager.getSettingsObject().whitelistedDrives ) // Loop through all the subkeys 
+                    listBoxWhitelistedDevices.Items.Add( device.volumeName ); // Add each one to the end of the whitelisted devices 
 
         }
 
@@ -172,64 +151,35 @@ namespace pub
                             if (GetVolumeInformation(driveLetter, volumeInfo.volumeName, volumeInfo.volumeName.Capacity, out volumeInfo.serialNumber, out volumeInfo.maxComponentLen, out volumeInfo.fileSysetmFlags, volumeInfo.fileSystemName, volumeInfo.fileSystemName.Capacity))
                             {
 
-                                listBoxDevicesConnected.Items.Add( driveLetter + "\\" + volumeInfo.volumeName ); // Add the newest device to the end of the device list.
+                                if ( listBoxDevicesConnected.Items.Contains( volumeInfo ) ) // Make sure that the device isn't already in the listbox
+                                    listBoxDevicesConnected.Items.Add( volumeInfo ); // Add the newest device to the end of the device list.
 
-                                connectedDrives.Add(volumeInfo);
+                                volumeInformation currentWhitelistedObject = settingsManager.findVolumeInformation( volumeInfo.serialNumber );
 
-                                RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\pub\devices", false);
-
-                                if (registryKey == null) // Create that sub key
-                                    Registry.CurrentUser.CreateSubKey(@"SOFTWARE\pub\devices");
-                                else
+                                if (currentWhitelistedObject != null ) // Drive was found inside the whitelisted list
                                 {
-                                    // Proceed to check if the device has been added to the pool
 
-                                    string[] devices = registryKey.GetSubKeyNames();
-
-                                    foreach (string device in devices)
+                                    switch (currentWhitelistedObject.fileResolverMethod)
                                     {
 
-                                        RegistryKey rk = registryKey.OpenSubKey(device, false);
+                                        case SettingLevels.high:
+                                            backupProcesses.backupHigh(currentWhitelistedObject.archiveMethod, volumeInfo);
+                                            break;
 
-                                        if (rk != null)
-                                        {
-                                            if ((string)rk.GetValue("serialnumber") == volumeInfo.serialNumber.ToString("X8"))
-                                            {
+                                        case SettingLevels.medium:
+                                            backupProcesses.backupMedium(currentWhitelistedObject.archiveMethod, volumeInfo);
+                                            break;
 
-                                                SettingLevels archiveMethod = (SettingLevels)comboBoxArchiveMethod.SelectedIndex;
-                                                SettingLevels fileResolver = (SettingLevels)comboBoxFileResolver.SelectedIndex;
+                                        case SettingLevels.low:
+                                            backupProcesses.backupLow(currentWhitelistedObject.archiveMethod, volumeInfo);
+                                            break;
 
-
-                                                switch (fileResolver)
-                                                {
-
-                                                    case SettingLevels.high:
-                                                        backupProcesses.backupHigh(archiveMethod, volumeInfo);
-                                                        break;
-
-                                                    case SettingLevels.medium:
-                                                        backupProcesses.backupMedium(archiveMethod, volumeInfo);
-                                                        break;
-
-                                                    case SettingLevels.low:
-                                                        backupProcesses.backupLow(archiveMethod, volumeInfo);
-                                                        break;
-
-                                                    default:
-                                                        MessageBox.Show("Error occured when getting the resolver setting.");
-                                                        break;
-
-                                                }
-
-                                                break;
-                                            }
-                                        }
-
-                                        rk.Close();
+                                        default:
+                                            MessageBox.Show("Error occured when getting the resolver setting.");
+                                            break;
 
                                     }
 
-                                    registryKey.Close();
                                 }
 
                             }
@@ -257,6 +207,8 @@ namespace pub
             {
                 // Set the path in the settings to the new path
 
+                settingsManager.setBackupPath( fileDialog.SelectedPath );
+
                 textBoxFolderPath.Text = fileDialog.SelectedPath;
 
                 // Force the textbox to show the end of the file path
@@ -271,53 +223,12 @@ namespace pub
 
             if (listBoxDevicesConnected.SelectedItem != null)
             {
-
-                RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\pub\devices", true);
-
-                if (registryKey != null)
-                {
-                    // Proceed to check if the device has been added to the pool
-
-                    foreach (volumeInformation drive in connectedDrives) // Loop through the stored devices
-                    {
-
-                        // Todo - find a better method of identifying the drive aka serial number. Maybe a class for the combobox item with a ToString override?
-
-                        // Check if the current device in the array has the same volume name as the selected drive.
-                        if (drive.volumeName.ToString() == listBoxDevicesConnected.SelectedItem.ToString().Substring(3)) // Remove the devices path
-                        {
-
-                            if (!(registryKey.GetSubKeyNames().Contains(drive.serialNumber.ToString("X8")))) // Make sure that the device isn't already registered.
-                            {
-                                using (RegistryKey rk = registryKey.CreateSubKey(drive.serialNumber.ToString("X8"), true)) // Create a new sub key with the serial number as the name.
-                                {
-
-                                    if (rk != null) // Make sure that it has been created.
-                                    {
-                                        // Set the necessary values.
-                                        rk.SetValue("name", drive.volumeName);
-                                        rk.SetValue("serialnumber", drive.serialNumber.ToString("X8"));
-                                        // Add the device name to the list of whitelisted devices.
-                                        listBoxWhitelistedDevices.Items.Add(listBoxDevicesConnected.SelectedItem.ToString().Substring(3));
-                                    }
-
-                                    rk.Close(); // Close the opened handle to the registry.
-
-                                }
-                            }
-                            else // Notify the user that it already exists
-                                MessageBox.Show("Device already is whitelisted!");
-
-                        }
-
-                    }
-
-                    registryKey.Close(); // Close the opened handle to the registry.
-
-                }
-
+                // Save the device to the settings.json and add it to the list
+                settingsManager.addWhitelistDevice( (volumeInformation)listBoxDevicesConnected.SelectedItem );
+                // Add it visually to the whitelisted device listbox
+                listBoxWhitelistedDevices.Items.Add( listBoxDevicesConnected.SelectedItem );
             }
-            else
+            else // Tell the user that they haven't selected a device
                 MessageBox.Show("No device has been selected. Select a device then try again.");
 
         }
@@ -328,38 +239,11 @@ namespace pub
             if (MessageBox.Show("Are you sure you want to remove this device?", "Device Removal", MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
 
-                // Remove it from the registry 
-
-                RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\pub\devices", true);
-
-                if (registryKey != null)
-                {
-
-                    foreach (volumeInformation drive in connectedDrives) // Loop through the stored devices
-                    {
-
-                        // Todo - find a better method of identifying the drive aka serial number. Maybe a class for the combobox item with a ToString override?
-
-                        // Check if the current device in the array has the same volume name as the selected drive.
-                        if (drive.volumeName.ToString() == listBoxWhitelistedDevices.SelectedItem.ToString()) // Remove the devices path
-                        {
-
-                            if (registryKey.GetSubKeyNames().Contains(drive.serialNumber.ToString("X8"))) // Make sure that the device is already registered.
-                                registryKey.DeleteSubKey(drive.serialNumber.ToString("X8")); // Delete the devices subkey
-                            else // Notify the user that it already doesn't exist
-                                MessageBox.Show("Device not found in registry!");
-
-                        }
-
-                    }
-
-                    registryKey.Close(); // Close the opened handle to the registry.
-
-                }
-            
-                // Remove it visually
-                listBoxWhitelistedDevices.Items.RemoveAt(listBoxWhitelistedDevices.SelectedIndex);
-
+                // Remove it from the settings.json file and the device list 
+                // Check if the fuction returns 1 as it means that one device has been removed 
+                if(settingsManager.removeWhitelistedDevice( (volumeInformation)listBoxWhitelistedDevices.SelectedItem ) == 1)
+                    listBoxWhitelistedDevices.Items.RemoveAt( listBoxWhitelistedDevices.SelectedIndex ); // Remove it visually
+        
             }
 
         }

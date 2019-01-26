@@ -8,7 +8,7 @@ using System.IO;
 
 namespace pub
 {
-    class fileBackup
+    class FileBackup
     {
 
         public void backupHigh( SettingLevels archiveMethod, volumeInformation targetDrive )
