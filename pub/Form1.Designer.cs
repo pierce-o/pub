@@ -81,6 +81,7 @@
             this.listBoxWhitelistedDevices.Name = "listBoxWhitelistedDevices";
             this.listBoxWhitelistedDevices.Size = new System.Drawing.Size(184, 95);
             this.listBoxWhitelistedDevices.TabIndex = 2;
+            this.listBoxWhitelistedDevices.SelectedIndexChanged += new System.EventHandler(this.listBoxWhitelistedDevices_SelectedIndexChanged);
             // 
             // buttonWhitelist
             // 
@@ -163,6 +164,7 @@
             this.comboBoxArchiveMethod.Size = new System.Drawing.Size(178, 21);
             this.comboBoxArchiveMethod.TabIndex = 4;
             this.comboBoxArchiveMethod.Text = "Default : Medium";
+            this.comboBoxArchiveMethod.SelectedIndexChanged += new System.EventHandler(this.comboBoxArchiveMethod_SelectedIndexChanged);
             // 
             // labelFileResolver
             // 
@@ -185,6 +187,7 @@
             this.comboBoxFileResolver.Size = new System.Drawing.Size(178, 21);
             this.comboBoxFileResolver.TabIndex = 2;
             this.comboBoxFileResolver.Text = "Default : Medium";
+            this.comboBoxFileResolver.SelectedIndexChanged += new System.EventHandler(this.comboBoxFileResolver_SelectedIndexChanged);
             // 
             // buttonBackupLocation
             // 

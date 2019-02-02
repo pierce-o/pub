@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace pub
 {
@@ -50,6 +51,9 @@ namespace pub
 
         public SettingLevels fileResolverMethod = SettingLevels.medium;
         public SettingLevels archiveMethod = SettingLevels.medium;
+
+        [JsonIgnore]
+        public string driveLetter;
 
     }
 

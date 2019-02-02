@@ -90,6 +90,28 @@ namespace pub
             save(); // Save the new settings to the json file
         }
 
+        public void setArchiveMethod(volumeInformation device, SettingLevels level)
+        {
+            settingsObject.whitelistedDrives.Find(x => x.serialNumber == device.serialNumber).archiveMethod = level;
+            save(); // Save the new settings to the json file
+        }
+
+        public void setFileResolver(volumeInformation device, SettingLevels level)
+        { 
+            settingsObject.whitelistedDrives.Find(x => x.serialNumber == device.serialNumber).fileResolverMethod = level;
+            save(); // Save the new settings to the json file
+        }
+
+        public SettingLevels getArchiveMethod(volumeInformation device)
+        { 
+            return settingsObject.whitelistedDrives.Find(x => x.serialNumber == device.serialNumber).archiveMethod;
+        }
+
+        public SettingLevels getFileResolver(volumeInformation device)
+        {
+            return settingsObject.whitelistedDrives.Find(x => x.serialNumber == device.serialNumber).fileResolverMethod;
+        }
+
         private void save() // Converts and writes the settings object to the json file
         {
             using (var writer = new StreamWriter(settings, false)) // Create a new streamwriter for the settings file

@@ -5,33 +5,66 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Diagnostics;
 
 namespace pub
 {
     class FileBackup
     {
 
-        public void backupHigh( SettingLevels archiveMethod, volumeInformation targetDrive )
+        public void backupHigh(string backupPath, SettingLevels archiveMethod, volumeInformation targetDrive )
         {
 
             // When the USB is inserted it will backup all the files no matter what.
-            switch( archiveMethod )
+            switch ( archiveMethod )
             {
 
                 case SettingLevels.high:
 
-                    string folderBackupPath = ""; // Get it from the JSON file.
-                    string newFolderPath = Path.Combine( folderBackupPath, targetDrive.serialNumber.ToString("X8") );
+                    string newFolderPath = Path.Combine(backupPath, targetDrive.serialNumber.ToString("X8") );
 
                     if ( !Directory.Exists(newFolderPath) ) // If the path for the drives folder doesn't already exist create one so that we can backup there.
                         Directory.CreateDirectory( newFolderPath );
 
-                    string datedFolderPath = Path.Combine( newFolderPath, DateTime.Now.ToShortDateString() );
+                    string currentDate = DateTime.Now.ToShortDateString();
+                    currentDate = currentDate.Replace("/", "-");
 
-                    if ( !Directory.Exists( datedFolderPath ) ) // Make sure we don't duplicate the data by backing it up more than once each day.
-                        Directory.CreateDirectory( datedFolderPath );
+                    string datedFolderPath = Path.Combine( newFolderPath, currentDate );
 
+                    if (!Directory.Exists(datedFolderPath)) // Make sure we don't duplicate the data by backing it up more than once each day.
+                    {
+                        Directory.CreateDirectory(datedFolderPath);
 
+                        // Get information about the USB drives files and folders
+                        DirectoryInfo directoryInfo = new DirectoryInfo(targetDrive.driveLetter);
+
+                        // Replicate all the folders from the USB 
+                        foreach (DirectoryInfo dir in directoryInfo.GetDirectories("*.*", SearchOption.AllDirectories))
+                        {
+                            if (dir.Name != "System Volume Information") // Skip this hidden system folder
+                            {
+                                // Remove the USB drive letter from the folders full path
+                                string newDir = Path.Combine(datedFolderPath, dir.FullName.Substring(3));
+
+                                // Make sure it isn't already there
+                                if (!Directory.Exists(newDir))
+                                {
+                                    Directory.CreateDirectory(newDir); // Create the folder
+                                }
+                            }
+                        }
+
+                        // Get all files from the USB drive
+                        foreach (FileInfo file in directoryInfo.GetFiles("*.*", SearchOption.AllDirectories))
+                        {
+                            if (file.Name != "WPSettings.dat" && file.Name != "IndexerVolumeGuid") // Skip the hidden system files
+                            {
+                                string newPath = Path.Combine(datedFolderPath, file.FullName.Substring(3)); // Combine the backup location with the file path without the drive letter 
+                                if (!File.Exists(newPath)) // Make sure it hasn't already been backed up
+                                    File.Copy(file.FullName, newPath); // Copy it over to the new location
+                            }
+                        }
+                    }
 
                     break;
 

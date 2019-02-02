@@ -88,6 +88,8 @@ namespace pub
                 {
                     volumeInformation volumeInfo = new volumeInformation();
 
+                    volumeInfo.driveLetter = drive.RootDirectory.ToString();
+
                     if (GetVolumeInformation(drive.RootDirectory.ToString(), volumeInfo.volumeName, volumeInfo.volumeName.Capacity, out volumeInfo.serialNumber, out volumeInfo.maxComponentLen, out volumeInfo.fileSysetmFlags, volumeInfo.fileSystemName, volumeInfo.fileSystemName.Capacity))
                         listBoxDevicesConnected.Items.Add( volumeInfo ); // Add the volume information for the new drive to the end of the listbox
                 }
@@ -97,7 +99,7 @@ namespace pub
 
             if( settingsManager.getSettingsObject().whitelistedDrives != null ) // Make sure there is a list in the first place
                 foreach ( var device in settingsManager.getSettingsObject().whitelistedDrives ) // Loop through all the subkeys 
-                    listBoxWhitelistedDevices.Items.Add( device.volumeName ); // Add each one to the end of the whitelisted devices 
+                    listBoxWhitelistedDevices.Items.Add( device ); // Add each one to the end of the whitelisted devices 
 
         }
 
@@ -151,6 +153,8 @@ namespace pub
                             if (GetVolumeInformation(driveLetter, volumeInfo.volumeName, volumeInfo.volumeName.Capacity, out volumeInfo.serialNumber, out volumeInfo.maxComponentLen, out volumeInfo.fileSysetmFlags, volumeInfo.fileSystemName, volumeInfo.fileSystemName.Capacity))
                             {
 
+                                volumeInfo.driveLetter = driveLetter + "\\";
+
                                 if ( listBoxDevicesConnected.Items.Contains( volumeInfo ) ) // Make sure that the device isn't already in the listbox
                                     listBoxDevicesConnected.Items.Add( volumeInfo ); // Add the newest device to the end of the device list.
 
@@ -163,7 +167,7 @@ namespace pub
                                     {
 
                                         case SettingLevels.high:
-                                            backupProcesses.backupHigh(currentWhitelistedObject.archiveMethod, volumeInfo);
+                                            backupProcesses.backupHigh(settingsManager.getSettingsObject().backupPath, currentWhitelistedObject.archiveMethod, volumeInfo);
                                             break;
 
                                         case SettingLevels.medium:
@@ -238,14 +242,33 @@ namespace pub
 
             if (MessageBox.Show("Are you sure you want to remove this device?", "Device Removal", MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
-
                 // Remove it from the settings.json file and the device list 
                 // Check if the fuction returns 1 as it means that one device has been removed 
                 if(settingsManager.removeWhitelistedDevice( (volumeInformation)listBoxWhitelistedDevices.SelectedItem ) == 1)
-                    listBoxWhitelistedDevices.Items.RemoveAt( listBoxWhitelistedDevices.SelectedIndex ); // Remove it visually
-        
+                    listBoxWhitelistedDevices.Items.RemoveAt( listBoxWhitelistedDevices.SelectedIndex ); // Remove it visually       
             }
 
+        }
+
+        private void comboBoxFileResolver_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Make sure the selected item isn't null
+            if(listBoxWhitelistedDevices.SelectedItem != null) // Update the FileResolver value for the current selected device 
+                settingsManager.setFileResolver((volumeInformation)listBoxWhitelistedDevices.SelectedItem, (SettingLevels)comboBoxFileResolver.SelectedIndex);
+        }
+
+        private void comboBoxArchiveMethod_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Make sure the selected item isn't null
+            if (listBoxWhitelistedDevices.SelectedItem != null) // Update the ArchiveMethod value for the current selected device 
+                settingsManager.setArchiveMethod((volumeInformation)listBoxWhitelistedDevices.SelectedItem, (SettingLevels)comboBoxArchiveMethod.SelectedIndex);
+        }
+
+        private void listBoxWhitelistedDevices_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Update the combobox's value for the corresponding selected device 
+            comboBoxArchiveMethod.SelectedIndex = (int)settingsManager.getArchiveMethod( (volumeInformation)listBoxWhitelistedDevices.SelectedItem );
+            comboBoxFileResolver.SelectedIndex = (int)settingsManager.getFileResolver((volumeInformation)listBoxWhitelistedDevices.SelectedItem);
         }
     }
 }
