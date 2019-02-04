@@ -44,6 +44,8 @@
             this.comboBoxFileResolver = new System.Windows.Forms.ComboBox();
             this.buttonBackupLocation = new System.Windows.Forms.Button();
             this.textBoxFolderPath = new System.Windows.Forms.TextBox();
+            this.listBoxEvents = new System.Windows.Forms.ListBox();
+            this.labelEvents = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -120,6 +122,8 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.labelEvents);
+            this.groupBox2.Controls.Add(this.listBoxEvents);
             this.groupBox2.Controls.Add(this.labelBackupLocation);
             this.groupBox2.Controls.Add(this.labelArchiveMethod);
             this.groupBox2.Controls.Add(this.comboBoxArchiveMethod);
@@ -129,7 +133,7 @@
             this.groupBox2.Controls.Add(this.textBoxFolderPath);
             this.groupBox2.Location = new System.Drawing.Point(218, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(190, 151);
+            this.groupBox2.Size = new System.Drawing.Size(190, 319);
             this.groupBox2.TabIndex = 7;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Backup Settings";
@@ -207,6 +211,26 @@
             this.textBoxFolderPath.Size = new System.Drawing.Size(116, 20);
             this.textBoxFolderPath.TabIndex = 0;
             // 
+            // listBoxEvents
+            // 
+            this.listBoxEvents.BackColor = System.Drawing.SystemColors.Control;
+            this.listBoxEvents.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.listBoxEvents.FormattingEnabled = true;
+            this.listBoxEvents.HorizontalScrollbar = true;
+            this.listBoxEvents.Location = new System.Drawing.Point(6, 179);
+            this.listBoxEvents.Name = "listBoxEvents";
+            this.listBoxEvents.Size = new System.Drawing.Size(178, 130);
+            this.listBoxEvents.TabIndex = 9;
+            // 
+            // labelEvents
+            // 
+            this.labelEvents.AutoSize = true;
+            this.labelEvents.Location = new System.Drawing.Point(6, 163);
+            this.labelEvents.Name = "labelEvents";
+            this.labelEvents.Size = new System.Drawing.Size(40, 13);
+            this.labelEvents.TabIndex = 10;
+            this.labelEvents.Text = "Events";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -244,6 +268,8 @@
         private System.Windows.Forms.Label labelArchiveMethod;
         private System.Windows.Forms.ComboBox comboBoxArchiveMethod;
         private System.Windows.Forms.Label labelBackupLocation;
+        private System.Windows.Forms.ListBox listBoxEvents;
+        private System.Windows.Forms.Label labelEvents;
     }
 }
 

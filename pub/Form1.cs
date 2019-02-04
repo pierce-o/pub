@@ -155,6 +155,8 @@ namespace pub
 
                                 volumeInfo.driveLetter = driveLetter + "\\";
 
+                                listBoxEvents.Items.Add("[ " + DateTime.Now.ToShortTimeString() + " ] Starting the backup of USB drive, " + volumeInfo.driveLetter + volumeInfo.volumeName + ".");
+
                                 if ( listBoxDevicesConnected.Items.Contains( volumeInfo ) ) // Make sure that the device isn't already in the listbox
                                     listBoxDevicesConnected.Items.Add( volumeInfo ); // Add the newest device to the end of the device list.
 
