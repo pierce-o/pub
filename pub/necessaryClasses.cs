@@ -48,6 +48,7 @@ namespace pub
         public Int32 maxComponentLen;
         public Int32 fileSysetmFlags;
         public StringBuilder fileSystemName;
+        public long unusedSpace = 0;
 
         public SettingLevels fileResolverMethod = SettingLevels.medium;
         public SettingLevels archiveMethod = SettingLevels.medium;

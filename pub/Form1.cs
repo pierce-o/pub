@@ -160,6 +160,14 @@ namespace pub
 
                                 volumeInformation currentWhitelistedObject = settingsManager.findVolumeInformation( volumeInfo.serialNumber );
 
+                                IEnumerable< DriveInfo > driveInfo = DriveInfo.GetDrives().Where(x => x.DriveType == DriveType.Removable);
+
+                                if (driveInfo != null)
+                                {
+                                    volumeInfo.unusedSpace = driveInfo.Where( x => x.VolumeLabel == volumeInfo.volumeName.ToString()).First().AvailableFreeSpace;
+                                    settingsManager.setWhitelistedDevice( volumeInfo );
+                                }
+
                                 if (currentWhitelistedObject != null ) // Drive was found inside the whitelisted list
                                 {
 
@@ -171,11 +179,11 @@ namespace pub
                                             break;
 
                                         case SettingLevels.medium:
-                                            backupProcesses.backupMedium(currentWhitelistedObject.archiveMethod, volumeInfo);
+                                            backupProcesses.backupMedium(settingsManager.getSettingsObject().backupPath, currentWhitelistedObject.archiveMethod, volumeInfo);
                                             break;
 
                                         case SettingLevels.low:
-                                            backupProcesses.backupLow(currentWhitelistedObject.archiveMethod, volumeInfo);
+                                            backupProcesses.backupLow(settingsManager.getSettingsObject().backupPath, currentWhitelistedObject.archiveMethod, volumeInfo);
                                             break;
 
                                         default:

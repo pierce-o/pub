@@ -112,6 +112,13 @@ namespace pub
             return settingsObject.whitelistedDrives.Find(x => x.serialNumber == device.serialNumber).fileResolverMethod;
         }
 
+        public void setWhitelistedDevice(volumeInformation device)
+        {
+            settingsObject.whitelistedDrives.RemoveAll(x => x.serialNumber == device.serialNumber);
+            settingsObject.whitelistedDrives.Add( device );
+            save();
+        }
+
         private void save() // Converts and writes the settings object to the json file
         {
             using (var writer = new StreamWriter(settings, false)) // Create a new streamwriter for the settings file
