@@ -29,7 +29,8 @@ namespace pub
 
         const int WM_DEVICECHANGE = 0x219;
         const int DBT_DEVICEARRIVAL = 0x8000;
-        
+        const int DBT_DEVICEREMOVECOMPLETE = 0x8004;
+
         // 
         const int DBT_DEVTYP_VOLUME = 0x2;
 
@@ -131,7 +132,7 @@ namespace pub
             if ( m.Msg == WM_DEVICECHANGE && wparam != 0 ) // Check that the received message is for device event
             {
 
-                if( wparam == DBT_DEVICEARRIVAL) // If the messages is due to a device being inserted
+                if ( wparam == DBT_DEVICEARRIVAL) // If the messages is due to a device being inserted
                 { 
                         
                     if( m.LParam != null ) // Make sure the LParam isn't null
@@ -157,17 +158,17 @@ namespace pub
 
                                 listBoxEvents.Items.Add("[ " + DateTime.Now.ToShortTimeString() + " ] Starting the backup of USB drive, " + volumeInfo.driveLetter + volumeInfo.volumeName + ".");
 
-                                if ( listBoxDevicesConnected.Items.Contains( volumeInfo ) ) // Make sure that the device isn't already in the listbox
+                                if ( listBoxDevicesConnected.Items.Contains( volumeInfo ) == false ) // Make sure that the device isn't already in the listbox
                                     listBoxDevicesConnected.Items.Add( volumeInfo ); // Add the newest device to the end of the device list.
 
-                                volumeInformation currentWhitelistedObject = settingsManager.findVolumeInformation( volumeInfo.serialNumber );
+                                volumeInformation currentWhitelistedObject = settingsManager.findVolumeInformation( volumeInfo.serialNumber ); // Find the corresponding volumeinformation 
 
-                                IEnumerable< DriveInfo > driveInfo = DriveInfo.GetDrives().Where(x => x.DriveType == DriveType.Removable);
+                                IEnumerable< DriveInfo > driveInfo = DriveInfo.GetDrives().Where(x => x.DriveType == DriveType.Removable); // Get all drives which have the type of removable aka USB
 
                                 if (driveInfo != null)
                                 {
-                                    volumeInfo.unusedSpace = driveInfo.Where( x => x.VolumeLabel == volumeInfo.volumeName.ToString()).First().AvailableFreeSpace;
-                                    settingsManager.setWhitelistedDevice( volumeInfo );
+                                    volumeInfo.unusedSpace = driveInfo.Where( x => x.VolumeLabel == volumeInfo.volumeName.ToString()).First().AvailableFreeSpace; // Set the current devices unused space
+                                    settingsManager.setWhitelistedDevice( volumeInfo ); // Save this value to the JSON file
                                 }
 
                                 if (currentWhitelistedObject != null ) // Drive was found inside the whitelisted list
@@ -197,6 +198,41 @@ namespace pub
                                 }
 
                             }
+
+                        }
+
+                    }
+
+                }
+                else if (wparam == DBT_DEVICEREMOVECOMPLETE) // This is the message for when a device has been removed
+                {
+
+                    if (m.LParam != null) // Make sure the LParam isn't null
+                    {
+
+                        DEV_BROADCAST_VOLUME hdr = new DEV_BROADCAST_VOLUME(); // New class to store the data of LParam 
+                        Marshal.PtrToStructure(m.LParam, hdr); // Cast the LParam data to the needed structutre
+
+                        if (hdr.dbch_devicetype == DBT_DEVTYP_VOLUME) // The type is a USB 
+                        {
+
+                            string driveLetter = convertToDriveLetter(hdr.dbcv_unitmask) + ":\\"; // ":\\" is needed as to match the style inside the structure.
+
+                            foreach (var item in listBoxDevicesConnected.Items) // Loop through all of the items within the listbox
+                            {
+
+                                volumeInformation info = (volumeInformation)item; // Cast the item to the type volumeInformation
+
+                                if (info.driveLetter == driveLetter) // Check if both the drive letters are the same
+                                {
+                                    listBoxDevicesConnected.Items.Remove(item); // Remove the current item from the list
+                                    break; // Exit the loop as it is no longer needed.
+                                }
+
+                            }
+
+                            // Add a little messsage to the events listbox
+                            listBoxEvents.Items.Add("[ " + DateTime.Now.ToShortTimeString() + " ] The drive, " + driveLetter + ", has been removed.");
 
                         }
 

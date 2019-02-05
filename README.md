@@ -18,7 +18,7 @@ PUB is a program designed to backup a USB drive once it is plugged in to a compu
  - Setting a backup location.
 # Known Bugs
  - When the program is rebooted it sometimes removes the previous backup settings. Hasn't been looked into.
- - When a device is removed from the computer it doesn't remove it from the list. This isn't necessarily a bug but it is something that needs to be implemented using `DBT_DEVICEREMOVECOMPLETE`.
+ - ~~When a device is removed from the computer it doesn't remove it from the list. This isn't necessarily a bug but it is something that needs to be implemented using `DBT_DEVICEREMOVECOMPLETE`.~~
 
 # Download
 You can either manually download the solution and build it your self or get the latest download from the release page, [here](https://github.com/pierce-o/pub/releases).
