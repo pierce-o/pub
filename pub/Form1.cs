@@ -290,8 +290,12 @@ namespace pub
             {
                 // Remove it from the settings.json file and the device list 
                 // Check if the fuction returns 1 as it means that one device has been removed 
-                if(settingsManager.removeWhitelistedDevice( (volumeInformation)listBoxWhitelistedDevices.SelectedItem ) == 1)
-                    listBoxWhitelistedDevices.Items.RemoveAt( listBoxWhitelistedDevices.SelectedIndex ); // Remove it visually       
+                if (settingsManager.removeWhitelistedDevice((volumeInformation)listBoxWhitelistedDevices.SelectedItem) == 1)
+                {
+                    volumeInformation volInfo = (volumeInformation)listBoxWhitelistedDevices.SelectedItem;
+                    listBoxWhitelistedDevices.Items.RemoveAt(listBoxWhitelistedDevices.SelectedIndex); // Remove it visually                                                                                         // Add a little messsage to the events listbox
+                    listBoxEvents.Items.Add("[ " + DateTime.Now.ToShortTimeString() + " ] The drive, " + volInfo.driveLetter + ", has been removed.");
+                }
             }
 
         }
